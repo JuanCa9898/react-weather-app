@@ -1,34 +1,63 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [city, setCity] = useState("");
+  const [weather, setWeather] = useState(null);
+
+  async function handleSearch() {
+    if (!city) return;
+
+    try {
+      const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1`);
+      const geoData = await geoResponse.json();
+      if (!geoData.results) {
+        alert("City not found");
+        return;
+      }
+      const {latitude, longitude, name} = geoData.results[0];
+      const weatherResponse = await fetch (
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`
+      );
+      const weatherData = await weatherResponse.json();
+
+      setWeather({
+        city: name,
+        temperature: weatherData.current_weather.temperature,
+        windspeed: weatherData.current_weather.windspeed
+      });
+
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong");
+    }
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+
+      <div className = "container">
+
+        <h1>Weather App</h1>
+
+        <input
+          type="text"
+          placeholder="Enter city..."
+          value = {city}
+          onChange = {(e) => setCity(e.target.value)}
+        />
+
+        <button onClick={handleSearch}>Search</button>
+
+        <div>
+          {weather && (
+            <div>
+              <h2>{weather.city}</h2>
+              <p>Temperature: {weather.temperature}C</p>
+              <p>Wind Speed: {weather.windspeed} km/h</p>
+            </div>
+          )}
+        </div>
+
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
   )
 }
 
