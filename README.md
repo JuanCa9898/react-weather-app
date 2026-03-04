@@ -4,7 +4,7 @@ A full featured weather application with React
 
 ## Live Demo
 
-Coming soon ...
+https://react-weather-app-seven-vert.vercel.app
 
 ## Features
 
